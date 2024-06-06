@@ -1,0 +1,21 @@
+- name: audit "1.1.6"
+# run the check...1.1.6
+
+- name: "1.1.6 | PATCH | Ensure Relax minimum password length limits is set to Enabled."
+  community.windows.win_security_policy:
+      section: System Access
+      key: RelaxMinimumPasswordLengthLimits
+      value: 1
+  when:
+      - win22cis_rule_1_1_6
+  tags:
+      - level1-memberserver
+      - rule_1.1.6
+      - patch
+      - password
+
+- name: audit "1.1.6" again
+# run the check...1.1.6 again
+
+- name: write report
+  # write to report if need a report.  

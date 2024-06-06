@@ -1,0 +1,23 @@
+---
+
+- name: change_requires_reboot
+  ansible.builtin.set_fact:
+      reboot_host: true
+  tags:
+      - always
+
+
+# - name: Write_log_file
+#   template:
+#     src: output_log.txt.j2
+#     dest: "{{ log_file }}"
+#   vars:
+#     contents: "{{ log_content | default([])  }}"
+
+
+# - name: Write_report_file
+#   template:
+#     src: output_report.csv.j2
+#     dest: "{{ report_file }}"
+#   vars:
+#     contents: "{{ report_content | default([]) }}"    

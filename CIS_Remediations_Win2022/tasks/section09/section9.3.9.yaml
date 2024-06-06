@@ -1,0 +1,128 @@
+- name: "9.3.9 | Audit | Ensure 'Windows Firewall: Public: Logging: Log successful connections' is set to 'Yes' - Before Remediation"
+  win_reg_stat:
+    path: HKLM:\Software\Policies\Microsoft\Windowsfirewall\PublicProfile\Logging
+    name: LogSuccessfulConnections
+  register: reg_value_939
+  tags:
+    - patch
+    - audit
+
+- name: Add action log to the list
+  set_fact:
+    log_content: "{{ log_content + [
+      task_name, 
+      'No remediation required'
+      ] }}"
+  vars:
+    task_name: "9.3.9 | PATCH | Ensure 'Windows Firewall: Public: Logging: Log successful connections' is set to 'Yes'"
+  when: reg_value_939.value|default(0) == 1 and not fix_member_server
+  tags:
+    - patch
+    - audit
+
+- name: Add action log to the list
+  set_fact:
+    log_content: "{{ log_content + [
+      task_name, 
+      'Run with tag audit'
+      ] }}"
+  vars:
+    task_name: "9.3.9 | PATCH | Ensure 'Windows Firewall: Public: Logging: Log successful connections' is set to 'Yes'"
+  when:
+    - "'audit' in ansible_run_tags"  
+  tags:
+    - audit
+
+- name: "9.3.9 | PATCH | Ensure 'Windows Firewall: Public: Logging: Log successful connections' is set to 'Yes'"
+  block:
+
+    - name: "9.3.9 | PATCH | Ensure 'Windows Firewall: Public: Logging: Log successful connections' is set to 'Yes' - Update Registry"
+      ansible.windows.win_regedit:
+        path: HKLM:\Software\Policies\Microsoft\Windowsfirewall\PublicProfile\Logging
+        name: LogSuccessfulConnections
+        data: 1
+        type: dword
+      register: task_9_3_9_1
+
+    - name: Add action log to the list
+      set_fact:
+        log_content: "{{ log_content + [
+          task_name, 
+          'Updated Registry HKLM:\\Software\\Policies\\Microsoft\\Windowsfirewall\\PublicProfile\\Logging LogSuccessfulConnections=1',
+          task_9_3_9_1
+          ] }}"
+      vars:
+        task_name: "9.3.9 | PATCH | Ensure 'Windows Firewall: Public: Logging: Log successful connections' is set to 'Yes' - Update Registry"
+
+    - name: "9.3.9 | PATCH | Ensure 'Windows Firewall: Public: Logging: Log successful connections' is set to 'Yes' - Update GPO"
+      win_shell: |
+        Import-Module GroupPolicy
+        $GPO = Get-GPO -Name "{{ cis_gpo }}"
+        if ($GPO -eq $null) {
+            Write-Output "GPO {{ cis_gpo }} not exist, creating it"
+            New-GPO -Name "{{ cis_gpo }}"
+        } else {
+            Write-Output "GPO {{ cis_gpo }} exist"
+        }
+        $domainGPOName = (Get-GPO -Name "{{ cis_gpo }}").DisplayName
+        Set-GPRegistryValue -Name $domainGPOName -Key "HKLM\Software\Policies\Microsoft\Windowsfirewall\PublicProfile\Logging" -ValueName "LogSuccessfulConnections" -Type DWORD -Value 1
+      register: task_9_3_9_2 
+      when: win2022cis_is_domain_controller
+
+    - name: Add action log to the list
+      set_fact:
+        log_content: "{{ log_content + [
+          task_name, 
+          'Public: Logging: Log successful connections is set to Yes in GPO ' ~ cis_gpo,
+          task_9_3_9_2
+          ] }}"
+      vars:
+        task_name: "9.3.9 | PATCH | Ensure 'Windows Firewall: Public: Logging: Log successful connections' is set to 'Yes' - Update GPO"
+      when:
+        - win2022cis_is_domain_controller
+
+    - name: "9.3.9 | PATCH | Ensure 'Windows Firewall: Public: Logging: Log successful connections' is set to 'Yes' - Update Local Group Policy"
+      win_shell: |
+        C:\Windows\Temp\CIS_REMEDIATION\LGPO.exe /t C:\Windows\Temp\CIS_REMEDIATION\s9\s9.3.9.txt
+      register: task_9_3_9_3
+      when:
+        - win2022cis_is_standalone
+
+    - name: Add action log to the list
+      set_fact:
+        log_content: "{{ log_content + [
+          task_name, 
+          'Public: Logging: Log successful connections is set to Yes in Local Security Policy',
+          task_9_3_9_3
+          ] }}"
+      vars:
+        task_name: "9.3.9 | PATCH | Ensure 'Windows Firewall: Public: Logging: Log successful connections' is set to 'Yes' - Update Local Group Policy"
+      when:
+        - win2022cis_is_standalone
+
+  when: reg_value_939.value|default(0) != 1 or fix_member_server
+  tags:
+    - patch
+
+- name: "9.3.9 | Audit | Ensure 'Windows Firewall: Public: Logging: Log successful connections' is set to 'Yes' - After Remediation"
+  win_reg_stat:
+    path: HKLM:\Software\Policies\Microsoft\Windowsfirewall\PublicProfile\Logging
+    name: LogSuccessfulConnections
+  register: reg_value_939_a
+  tags:
+    - patch
+    - audit
+
+- name: Add check result to the list
+  set_fact:
+    report_content: "{{ report_content + [new_report_content] }}"
+  vars:
+    new_report_content:
+      output_check_id: "9.3.9"
+      output_check_name: "Ensure 'Windows Firewall: Public: Logging: Log successful connections' is set to 'Yes'"
+      output_check_status_before: "{{ 'PASS' if reg_value_939.value|default(0)==1 else 'FAIL' }}"
+      output_check_status_after: "{{ 'PASS' if reg_value_939_a.value|default(0) == 1 and not win2022cis_is_domain_member or reg_value_939_a.value|default(0) == 1 and reg_value_939.value|default(0) == 1  else 'WARNING' if reg_value_939_a.value|default(0) == 1 and reg_value_939.value|default(0) != 1 and win2022cis_is_domain_member else 'FAIL' }}"
+      output_check_comments: "{{ 'Need To Fix From Domain Controller' if win2022cis_is_domain_member and reg_value_939.value|default(0)!=1 else 'Fix for Member Server' if fix_member_server else '' }}"
+  tags:
+    - patch
+    - audit

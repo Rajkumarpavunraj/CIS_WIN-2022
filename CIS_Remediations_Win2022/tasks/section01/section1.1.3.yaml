@@ -1,0 +1,95 @@
+- name: "1.1.3 | AUDIT | Ensure Minimum password age is set to 1 or more days - Before Remediation."
+  ansible.windows.win_shell: secedit /export /cfg "{{win_access_settings_file_before}}"
+  tags:
+    - patch
+    - audit
+
+- name: Get Current Minimum Password Age value
+  win_shell: Get-Content "{{win_access_settings_file_before}}" | findstr 'MinimumPasswordAge' | %{$_.split(' ')[2]}
+  register: pwd_set_113_before
+  tags:
+    - patch
+    - audit
+
+
+- name: Debug Minimum Password Age Value before
+  debug: 
+    var: pwd_set_113_before.stdout
+
+
+- name: Add action log to the list - No remediation required
+  set_fact:
+    log_content: "{{ log_content + [
+      task_name, 
+      'No remediation required'
+      ] }}"
+  vars:
+    task_name: "1.1.3 | PATCH | Ensure Minimum password age is set to 1 or more days.'"
+  when: pwd_set_113_before.stdout|trim|int >= win22cis_minimum_password_age
+  tags:
+    - patch
+    - audit
+
+- name: Add action log to the list - Remediation Required
+  set_fact:
+    log_content: "{{ log_content + [
+      task_name, 
+      'Remediation required, Minimum password age is not set to 1 or more days '
+      ] }}"
+  vars:
+    task_name: "1.1.3 | PATCH | Ensure Minimum password age is set to 1 or more days.'"
+  when: pwd_set_113_before.stdout|trim|int == 0
+  tags:
+    - patch
+    - audit
+
+- name: "1.1.3 | PATCH | Ensure Minimum password age is set to 1 or more days."
+  block:
+
+      - name: "1.1.3 | PATCH | Ensure Minimum password age is set to 1 or more days - Set Minimum Password Age Value."
+        community.windows.win_security_policy:
+            section: System Access
+            key: MinimumPasswordAge
+            value: "{{ win22cis_minimum_password_age }}"
+
+      - name: Add action log to the list - Set Minimum Password Age Value
+        set_fact:
+          log_content: "{{ log_content + [
+            task_name, 
+            'Minimum Password age value set to 1 '
+            ] }}"
+        vars:
+          task_name: "1.1.3 | PATCH | Ensure Minimum password age is set to 1 or more days - Set Minimum Password Age Value'"
+
+  when:
+      - win22cis_rule_1_1_3
+      - pwd_set_113_before.stdout|trim|int == 0
+  tags:
+      - patch
+
+
+- name: Export Current Windows System Access Settings | After Remediation
+  ansible.windows.win_shell: secedit /export /cfg "{{win_access_settings_file_after}}"
+
+
+- name: "1.1.3 | AUDIT | Ensure Minimum password age is set to 1 or more days - After Remediation"
+  ansible.windows.win_shell: Get-Content "{{win_access_settings_file_after}}" | findstr 'MinimumPasswordAge' | %{$_.split(' ')[2]}
+  register: pwd_set_113_after
+  tags:
+    - patch
+    - audit
+
+
+- name: Add check result to the list
+  set_fact:
+    report_content: "{{ report_content + [new_report_content] }}"
+  vars:
+    new_report_content:
+      output_check_id: "1.1.3"
+      output_check_name: "Ensure Minimum password age is set to 1 or more days."
+      output_check_status_before: "{{ 'PASS' if pwd_set_113_before.stdout|trim|int >= 1 else 'FAIL' }}"
+      output_check_status_after: "{{ 'PASS' if pwd_set_113_after.stdout|trim|int >= 1 else 'FAIL' }}"
+      output_check_comments: "{{ 'Need To Fix From Domain Controller' if win2022cis_is_domain_member else 'Fix for Member Server' if fix_member_server else '' }}"
+  tags:
+    - patch
+    - audit

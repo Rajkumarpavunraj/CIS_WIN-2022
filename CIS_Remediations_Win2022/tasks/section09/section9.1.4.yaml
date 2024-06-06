@@ -1,0 +1,135 @@
+# - name: domain profile log file path
+#   set_fact:
+#     win22cis_domain_firewall_log_path: '%SystemRoot%\System32\logfiles\firewall\domainfw.log'
+#   tags:
+#     - patch
+#     - audit    
+
+- name: "9.1.4 | Audit | Ensure 'Windows Firewall: Domain: Logging: Name' is set to '%SystemRoot%\\System32\\logfiles\\firewall\\domainfw.log' - Before Remediation"
+  win_reg_stat:
+    path: HKLM:\Software\Policies\Microsoft\Windowsfirewall\DomainProfile\Logging
+    name: LogFilePath
+  register: reg_value_914
+  tags:
+    - patch
+    - audit
+
+- name: Add action log to the list
+  set_fact:
+    log_content: "{{ log_content + [
+      task_name, 
+      'No remediation required' 
+      ] }}"
+  vars:
+    task_name: "9.1.4 | PATCH | Ensure 'Windows Firewall: Domain: Logging: Name' is set to '%SystemRoot%\\System32\\logfiles\\firewall\\domainfw.log'"
+  when: reg_value_914.value|default('')|lower == win22cis_domain_firewall_log_path|lower and not fix_member_server
+  tags:
+    - patch
+    - audit
+
+- name: Add action log to the list
+  set_fact:
+    log_content: "{{ log_content + [
+      task_name, 
+      'Run with tag audit'
+      ] }}"
+  vars:
+    task_name: "9.1.4 | PATCH | Ensure 'Windows Firewall: Domain: Logging: Name' is set to '%SystemRoot%\\System32\\logfiles\\firewall\\domainfw.log'"
+  when:
+    - "'audit' in ansible_run_tags"  
+  tags:
+    - audit
+
+- name: "9.1.4 | PATCH | Ensure 'Windows Firewall: Domain: Logging: Name' is set to '%SystemRoot%\\System32\\logfiles\\firewall\\domainfw.log'"
+  block:
+
+    - name: "9.1.4 | PATCH | Ensure 'Windows Firewall: Domain: Logging: Name' is set to '%SystemRoot%\\System32\\logfiles\\firewall\\domainfw.log' - Update Registry"
+      ansible.windows.win_regedit:
+        path: HKLM:\Software\Policies\Microsoft\Windowsfirewall\DomainProfile\Logging
+        name: LogFilePath
+        data: "{{ win22cis_domain_firewall_log_path }}"
+        type: string
+      register: task_9_1_4_1
+
+    - name: Add action log to the list
+      set_fact:
+        log_content: "{{ log_content + [
+          task_name, 
+          'Updated Registry HKLM:\\Software\\Policies\\Microsoft\\Windowsfirewall\\Domainprofile\\Logging LogFilePath=%SystemRoot%\\System32\\logfiles\\firewall\\domainfw.log',
+          task_9_1_4_1
+          ] }}"
+      vars:
+        task_name: "9.1.4 | PATCH | Ensure 'Windows Firewall: Domain: Logging: Name' is set to '%SystemRoot%\\System32\\logfiles\\firewall\\domainfw.log' - Update Registry"
+
+    - name: "9.1.4 | PATCH | Ensure 'Windows Firewall: Domain: Logging: Name' is set to '%SystemRoot%\\System32\\logfiles\\firewall\\domainfw.log' - Update GPO"
+      win_shell: |
+        Import-Module GroupPolicy
+        $GPO = Get-GPO -Name "{{ cis_gpo }}"
+        if ($GPO -eq $null) {
+            Write-Output "GPO {{ cis_gpo }} not exist, creating it"
+            New-GPO -Name "{{ cis_gpo }}"
+        } else {
+            Write-Output "GPO {{ cis_gpo }} exist"
+        }
+        $domainGPOName = (Get-GPO -Name "{{ cis_gpo }}").DisplayName
+        Set-GPRegistryValue -Name $domainGPOName -Key "HKLM\Software\Policies\Microsoft\WindowsFirewall\DomainProfile\Logging" -ValueName "LogFilePath" -Type String -Value %SystemRoot%\System32\logfiles\firewall\domainfw.log
+      register: task_9_1_4_2 
+      when: win2022cis_is_domain_controller
+
+    - name: Add action log to the list
+      set_fact:
+        log_content: "{{ log_content + [
+          task_name, 
+          'Domain: Logging: Name is set to %SystemRoot%\\System32\\logfiles\\firewall\\domainfw.log in GPO ' ~ cis_gpo,
+          task_9_1_4_2
+          ] }}"
+      vars:
+        task_name: "9.1.4 | PATCH | Ensure 'Windows Firewall: Domain: Logging: Name' is set to '%SystemRoot%\\System32\\logfiles\\firewall\\domainfw.log' - Update GPO"
+      when:
+        - win2022cis_is_domain_controller
+
+    - name: "9.1.4 | PATCH | Ensure 'Windows Firewall: Domain: Logging: Name' is set to '%SystemRoot%\\System32\\logfiles\\firewall\\domainfw.log' - Update Local Group Policy"
+      win_shell: |
+        C:\Windows\Temp\CIS_REMEDIATION\LGPO.exe /t C:\Windows\Temp\CIS_REMEDIATION\s9\s9.1.4.txt
+      register: task_9_1_4_3
+      when:
+        - win2022cis_is_standalone
+
+    - name: Add action log to the list
+      set_fact:
+        log_content: "{{ log_content + [
+          task_name, 
+          'Domain: Logging: Name is set to %SystemRoot%\\System32\\logfiles\\firewall\\domainfw.log in Local Security Policy',
+          task_9_1_4_3
+          ] }}"
+      vars:
+        task_name: "9.1.4 | PATCH | Ensure 'Windows Firewall: Domain: Logging: Name' is set to '%SystemRoot%\\System32\\logfiles\\firewall\\domainfw.log' - Update Local Group Policy"
+      when:
+        - win2022cis_is_standalone
+
+  when: reg_value_914.value|default('')|lower != win22cis_domain_firewall_log_path|lower or fix_member_server
+  tags:
+    - patch
+
+- name: "9.1.4 | Audit | Ensure 'Windows Firewall: Domain: Logging: Name' is set to '%SystemRoot%\\System32\\logfiles\\firewall\\domainfw.log' - After Remediation"
+  win_reg_stat:
+    path: HKLM:\Software\Policies\Microsoft\Windowsfirewall\DomainProfile\Logging
+    name: LogFilePath
+  register: reg_value_914_a
+  tags:
+    - patch
+    - audit
+
+- name: Add check result to the list
+  set_fact:
+    report_content: "{{ report_content + [new_report_content] }}"
+  vars:
+    new_report_content:
+      output_check_id: "9.1.4"
+      output_check_name: "Ensure 'Windows Firewall: Domain: Logging: Name' is set to '%SystemRoot%\\System32\\logfiles\\firewall\\domainfw.log'"
+      output_check_status_before: "{{ 'PASS' if reg_value_914.value|default('')|lower== win22cis_domain_firewall_log_path|lower else 'FAIL' }}"
+      output_check_status_after: "{{ 'PASS' if reg_value_914_a.value|default('')|lower == win22cis_domain_firewall_log_path|lower and not win2022cis_is_domain_member or reg_value_914_a.value|default('')|lower == win22cis_domain_firewall_log_path|lower and reg_value_914.value|default('')|lower == win22cis_domain_firewall_log_path|lower  else 'WARNING' if reg_value_914_a.value|default('')|lower == win22cis_domain_firewall_log_path|lower and reg_value_914.value|default('')|lower != win22cis_domain_firewall_log_path|lower and win2022cis_is_domain_member else 'FAIL' }}"
+      output_check_comments: "{{ 'Need To Fix From Domain Controller' if win2022cis_is_domain_member and reg_value_914.value|default('')|lower!=win22cis_domain_firewall_log_path|lower else 'Fix for Member Server' if fix_member_server else '' }}"
+  tags:
+    - patch
+    - audit

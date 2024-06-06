@@ -1,0 +1,82 @@
+---
+# tasks file for CIS_Remediations_Win2022
+- name: Create temp CIS Remediation folder
+    win_shell: |
+        mkdir C:\Windows\Temp\CIS_REMEDIATION
+    ignore_errors: true
+    vars:
+      ansible_shell_type: powershell   
+
+- name: Execute the section 19.5.1.1 tasks
+  ansible.builtin.import_tasks:  
+      file: section19.5.1.1.yaml
+  when:
+      - win22cis_section19
+  tags:
+      - section19
+  vars:
+      ansible_shell_type: powershell
+
+- name: Execute the section 19.7.5.1 tasks
+  ansible.builtin.import_tasks:
+      file: section19/section19.7.5.1.yaml
+  when:
+      - win22cis_section19
+  tags:
+      - section19
+
+- name: Execute the section 19.7.5.2 tasks
+  ansible.builtin.import_tasks:
+      file: section19/section19.7.5.2.yaml
+  when:
+      - win22cis_section19
+  tags:
+      - section19
+
+- name: Execute the section 19.7.8.1 tasks
+  ansible.builtin.import_tasks:
+      file: section19/section19.7.8.1.yaml
+  when:
+      - win22cis_section19
+  tags:
+      - section19
+
+- name: Execute the section 19.7.8.2 tasks
+  ansible.builtin.import_tasks:
+      file: section19/section19.7.8.2.yaml
+  when:
+      - win22cis_section19
+  tags:
+      - section19
+
+- name: Execute the section 19.7.8.5 tasks
+  ansible.builtin.import_tasks:
+      file: section19/section19.7.8.5.yaml
+  when:
+      - win22cis_section19
+  tags:
+      - section19
+      
+- name: Execute the section 19.7.26.1 tasks
+  ansible.builtin.import_tasks:
+      file: section19/section19.7.26.1.yaml
+  when:
+      - win22cis_section19
+  tags:
+      - section19
+
+- name: Execute the section 19.7.42.1 tasks
+  ansible.builtin.import_tasks:
+      file: section19/section19.7.42.1.yaml
+  when:
+      - win22cis_section19
+  tags:
+      - section19
+
+# - name: Execute the section 2.x.n tasks
+#   ansible.builtin.import_tasks:
+#       file: section02/section2.x..yaml
+#   when:
+#       - win22cis_section02
+#   tags:
+#       - section02

@@ -1,0 +1,4 @@
+Computer
+SOFTWARE\Policies\Microsoft\WindowsFirewall\DomainProfile
+DisableNotifications
+DWORD:1

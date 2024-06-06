@@ -1,0 +1,4 @@
+Computer
+SOFTWARE\Policies\Microsoft\WindowsFirewall\PrivateProfile
+EnableFirewall
+DWORD:1

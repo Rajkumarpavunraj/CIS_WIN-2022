@@ -1,0 +1,37 @@
+- name: audit "19.7.42.1"
+  ansible.windows.win_reg_stat:
+      path: HKU:\{{ item }}\Software\Policies\Microsoft\Windows\Installer
+      name: AlwaysInstallElevated
+  loop: "{{ hku_loaded_list }}"
+  register: audit_19_7_42_1
+  
+
+# Reference: https://docs.ansible.com/ansible/latest/collections/ansible/windows/win_user_right_module.html
+- name: "19.7.42.1 | PATCH | Ensure 'Always install with elevated privileges' is set to 'Disabled'"
+  ansible.windows.win_regedit:
+      path: HKU:\{{ item }}\Software\Policies\Microsoft\Windows\Installer
+      name: AlwaysInstallElevated
+      data: 0
+      type: dword
+  loop: "{{ hku_loaded_list }}"
+  #notify: change_requires_reboot
+  when:
+      - win22cis_rule_19_7_42_1
+  tags:
+      - level1-domaincontroller
+      - level1-memberserver
+      - rule_19.7.42.1
+      - patch
+      - userrights
+
+- name: audit "19.7.42.1" again
+  ansible.windows.win_reg_stat:
+      path: HKU:\{{ item }}\Software\Policies\Microsoft\Windows\Installer
+      name: AlwaysInstallElevated
+  loop: "{{ hku_loaded_list }}"
+  register: audit_19_7_42_1_again
+
+- name: write report
+  # write to report if need a report.
+  vars:
+    ansible_shell_type: sh

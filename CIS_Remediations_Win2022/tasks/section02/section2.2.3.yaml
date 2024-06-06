@@ -1,0 +1,115 @@
+- name: "2.2.3 | Audit | Ensure Access this computer from the network is set to Administrators, Authenticated Users, MS only | Member Server - Before Remediation"
+  become: false
+  win_shell: |
+      . C:\Windows\Temp\CIS_REMEDIATION\UserRightAssignment.ps1
+      (Get-AccountsWithUserRight -Right SeNetworkLogonRight). Account
+  register: user_rights_before
+  vars:
+    ansible_shell_type: powershell
+  tags:
+    - patch
+    - audit
+
+- name: Debug users rights before
+  debug: 
+    var: user_rights_before
+
+- name: Add action log to the list - No remediation required (Not Domain Member Server)
+  set_fact:
+    log_content: "{{ log_content + [
+      task_name, 
+      'No remediation required, Not a Domain Member Server'
+      ] }}"
+  vars:
+    task_name: "2.2.3 | PATCH | Ensure Access this computer from the network is set to Administrators, Authenticated Users, MS only | Member Server"
+  when:
+      - not win2022cis_is_domain_member
+  tags:
+    - patch
+    - audit
+
+- name: Add action log to the list - No remediation required (Domain Member Server)
+  set_fact:
+    log_content: "{{ log_content + [
+      task_name, 
+      'No remediation required, Access this computer from the network already set and Domain Member'
+      ] }}"
+  vars:
+    task_name: "2.2.3 | PATCH | Ensure Access this computer from the network is set to Administrators, Authenticated Users, MS only | Member Server"
+  when:
+      - win2022cis_is_domain_member
+      - ('Administrators' in user_rights_before.stdout and 'Users' in user_rights_before.stdout)
+  tags:
+    - patch
+    - audit
+
+- name: Add action log to the list - Remediation required
+  set_fact:
+    log_content: "{{ log_content + [
+      task_name, 
+      'Remediation required, Access this computer from the network' set to No One or need to set correct users and Domain Member'
+      ] }}"
+  vars:
+    task_name: "2.2.3 | PATCH | Ensure Access this computer from the network is set to Administrators, Authenticated Users, MS only | Member Server"
+  when: 
+      - win2022cis_is_domain_member
+      - (user_rights_before.stdout == "") or ('Administrators' not in user_rights_before.stdout and 'Users' not in user_rights_before.stdout) or ('Administrators' not in user_rights_before.stdout) or ('Users' not in user_rights_before.stdout)  
+  tags:
+    - patch
+    - audit
+
+- name: "2.2.3 | PATCH | Ensure Access this computer from the network is set to Administrators, Authenticated Users, MS only | Member Server"
+  block:  
+
+    - name: "2.2.3 | PATCH | Ensure Access this computer from the network is set to Administrators, Authenticated Users, MS only | Member Server - Update User Right"
+      ansible.windows.win_user_right:
+          name: SeNetworkLogonRight
+          users:
+            - Administrators
+            - Authenticated Users
+          action: set
+    
+    - name: Add action log to the list - Update User Right 
+      set_fact:
+        log_content: "{{ log_content + [
+          task_name, 
+          'Updated User Right - SeNetworkLogonRight'
+          ] }}"
+      vars:
+        task_name: "2.2.3 | PATCH | Ensure Access this computer from the network is set to Administrators, Authenticated Users, MS only | Member Server - Update User Right"
+
+  when:
+    - win22cis_rule_2_2_3
+    - win2022cis_is_domain_member
+    - (user_rights_before.stdout == "") or ('Administrators' not in user_rights_before.stdout and 'Users' not in user_rights_before.stdout) or ('Administrators' not in user_rights_before.stdout) or ('Users' not in user_rights_before.stdout)
+  tags:
+      - patch
+
+- name: "2.2.3 | Audit | Ensure Access this computer from the network is set to Administrators, Authenticated Users, MS only | Member Server - After Remediation"
+  become: false
+  win_shell: |
+      . C:\Windows\Temp\CIS_REMEDIATION\UserRightAssignment.ps1
+      (Get-AccountsWithUserRight -Right SeNetworkLogonRight). Account
+  register: user_rights_after
+  vars:
+    ansible_shell_type: powershell
+  tags:
+    - patch
+    - audit
+
+- name: Add check result to the list
+  set_fact:
+    report_content: "{{ report_content + [new_report_content] }}"
+  vars:
+    new_report_content:
+      # output_check_hostname: "{{ inventory_hostname }}"
+      # output_check_osname: "{{ ansible_os_name }}"
+      # output_check_hosttype: "{{ ansible_windows_domain_role }}"
+      output_check_id: "2.2.3"
+      output_check_name: "Ensure Access this computer from the network is set to Administrators, Authenticated Users, MS only | Member Server"
+      output_check_status_before: "{{ 'PASS' if (win2022cis_is_domain_member and 'Administrators' in user_rights_before.stdout and 'Users' in user_rights_before.stdout) or (not win2022cis_is_domain_member) else 'FAIL' }}"
+      output_check_status_after: "{{ 'PASS' if (win2022cis_is_domain_member and 'Administrators' in user_rights_before.stdout and 'Users' in user_rights_before.stdout) or (not win2022cis_is_domain_member)  else 'FAIL' }}"
+      output_check_comments: "{{ 'Need To Fix From Domain Controller' if win2022cis_is_domain_member else 'Fix for Member Server' if fix_member_server else '' }}"
+  tags:
+    - patch
+    - audit

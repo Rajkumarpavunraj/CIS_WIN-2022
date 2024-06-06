@@ -1,0 +1,28 @@
+---
+# vars file for CIS_Remediations_Win2022
+
+# Used to control warning summary
+warn_control_list: ""
+warn_count: 0
+
+# win22cis_cloud_based_system will be changed to true if discovered.
+win22cis_cloud_based_system: false
+
+# These are default values that will be changed when the prelim
+# runs and finds the correct setting.
+win2022cis_is_standalone: false
+win2022cis_is_domain_controller: false
+win2022cis_is_domain_member: false
+
+# Default setting, this should not be changed
+# and is overridden if a task that changed sets the value if required.
+reboot_host: false
+
+log_file_template: output_log.txt.j2
+report_file_template: output_report.csv.j2
+log_content: []
+report_content: []
+
+cis_gpo: "CIS_Remediation_GPO"
+
+fix_member_server: false

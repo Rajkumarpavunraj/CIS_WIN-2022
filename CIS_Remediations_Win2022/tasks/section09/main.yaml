@@ -1,0 +1,371 @@
+---
+
+
+- name: Ensure C:\Windows\Temp\CIS_REMEDIATION directory exists
+  ansible.windows.win_file:
+    path: C:\Windows\Temp\CIS_REMEDIATION
+    state: directory
+  tags:
+    - always
+
+- name: Copy LGPO.zip to remote Windows machine
+  ansible.windows.win_copy:
+    src: LGPO.zip
+    dest: C:\Windows\Temp\CIS_REMEDIATION\LGPO.zip
+  when: 
+    - win2022cis_is_standalone
+  tags:
+    - always
+
+- name: Unzip LGPO.zip
+  community.windows.win_unzip:
+    src: C:\Windows\Temp\CIS_REMEDIATION\LGPO.zip
+    dest: C:\Windows\Temp\CIS_REMEDIATION\
+    overwrite: yes
+  when: 
+    - win2022cis_is_standalone
+  tags:
+    - always
+
+- block:
+    - name: Set shell type and executable for localhost tasks
+      set_fact:
+        local_ansible_shell_type: sh
+        local_ansible_shell_executable: /bin/sh
+
+    - name: Archive local s9 folder
+      ansible.builtin.archive:
+        path: "{{ role_path }}/files/lgp/s9"
+        dest: "{{ role_path }}/files/lgp-s9.zip"
+        format: zip  
+      delegate_to: localhost
+      become: no
+      vars:
+        ansible_shell_type: "{{ local_ansible_shell_type }}"
+        ansible_shell_executable: "{{ local_ansible_shell_executable }}"
+      when: 
+        - win2022cis_is_standalone
+  tags:
+    - always
+
+- name: Transfer s9 archive to remote machine
+  ansible.windows.win_copy:
+    src: lgp-s9.zip
+    dest: C:\Windows\Temp\CIS_REMEDIATION\
+  when: 
+    - win2022cis_is_standalone
+  tags:
+    - always
+
+- name: Unarchive s9 on remote machine
+  community.windows.win_unzip:
+    src: C:\Windows\Temp\CIS_REMEDIATION\lgp-s9.zip
+    dest: C:\Windows\Temp\CIS_REMEDIATION\
+    overwrite: yes
+  when: 
+    - win2022cis_is_standalone
+  tags:
+    - always
+
+- name: Execute the section 9.1.1 tasks
+  ansible.builtin.import_tasks:
+      file: section09/section9.1.1.yaml
+  when:
+      - win22cis_section09
+  tags:
+    - level1-domaincontroller
+    - level1-memberserver
+    - rule_9.1.1
+    - firewall
+    - domain
+    - standalone
+
+- name: Execute the section 9.1.2 tasks
+  ansible.builtin.import_tasks:
+      file: section09/section9.1.2.yaml
+  when:
+      - win22cis_section09
+  tags:
+    - level1-domaincontroller
+    - level1-memberserver
+    - rule_9.1.2
+    - firewall
+    - domain
+    - standalone
+
+- name: Execute the section 9.1.3 tasks
+  ansible.builtin.import_tasks:
+      file: section09/section9.1.3.yaml
+  when:
+      - win22cis_section09
+  tags:
+    - level1-domaincontroller
+    - level1-memberserver
+    - rule_9.1.3
+    - firewall
+    - domain
+    - standalone
+
+- name: Execute the section 9.1.4 tasks
+  ansible.builtin.import_tasks:
+      file: section09/section9.1.4.yaml
+  when:
+      - win22cis_section09
+  tags:
+    - level1-domaincontroller
+    - level1-memberserver
+    - rule_9.1.4
+    - firewall
+    - domain
+    - standalone
+
+- name: Execute the section 9.1.5 tasks
+  ansible.builtin.import_tasks:
+      file: section09/section9.1.5.yaml
+  when:
+      - win22cis_section09
+  tags:
+    - level1-domaincontroller
+    - level1-memberserver
+    - rule_9.1.5
+    - firewall
+    - domain
+    - standalone
+
+- name: Execute the section 9.1.6 tasks
+  ansible.builtin.import_tasks:
+      file: section09/section9.1.6.yaml
+  when:
+      - win22cis_section09
+  tags:
+    - level1-domaincontroller
+    - level1-memberserver
+    - rule_9.1.6
+    - firewall
+    - domain
+    - standalone
+
+- name: Execute the section 9.1.7 tasks
+  ansible.builtin.import_tasks:
+      file: section09/section9.1.7.yaml
+  when:
+      - win22cis_section09
+  tags:
+    - level1-domaincontroller
+    - level1-memberserver
+    - rule_9.1.7
+    - firewall
+    - domain
+    - standalone
+
+
+- name: Execute the section 9.2.1 tasks
+  ansible.builtin.import_tasks:
+      file: section09/section9.2.1.yaml
+  when:
+      - win22cis_section09
+  tags:
+    - level1-domaincontroller
+    - level1-memberserver
+    - rule_9.2.1
+    - firewall
+    - domain
+    - standalone
+
+- name: Execute the section 9.2.2 tasks
+  ansible.builtin.import_tasks:
+      file: section09/section9.2.2.yaml
+  when:
+      - win22cis_section09
+  tags:
+    - level1-domaincontroller
+    - level1-memberserver
+    - rule_9.2.2
+    - firewall
+    - domain
+    - standalone
+
+- name: Execute the section 9.2.3 tasks
+  ansible.builtin.import_tasks:
+      file: section09/section9.2.3.yaml
+  when:
+      - win22cis_section09
+  tags:
+    - level1-domaincontroller
+    - level1-memberserver
+    - rule_9.2.3
+    - firewall
+    - domain
+    - standalone
+
+- name: Execute the section 9.2.4 tasks
+  ansible.builtin.import_tasks:
+      file: section09/section9.2.4.yaml
+  when:
+      - win22cis_section09
+  tags:
+    - level1-domaincontroller
+    - level1-memberserver
+    - rule_9.2.4
+    - firewall
+    - domain
+    - standalone
+
+- name: Execute the section 9.2.5 tasks
+  ansible.builtin.import_tasks:
+      file: section09/section9.2.5.yaml
+  when:
+      - win22cis_section09
+  tags:
+    - level1-domaincontroller
+    - level1-memberserver
+    - rule_9.2.5
+    - firewall
+    - domain
+    - standalone
+
+- name: Execute the section 9.2.6 tasks
+  ansible.builtin.import_tasks:
+      file: section09/section9.2.6.yaml
+  when:
+      - win22cis_section09
+  tags:
+    - level1-domaincontroller
+    - level1-memberserver
+    - rule_9.2.6
+    - firewall
+    - domain
+    - standalone
+
+- name: Execute the section 9.2.7 tasks
+  ansible.builtin.import_tasks:
+      file: section09/section9.2.7.yaml
+  when:
+      - win22cis_section09
+  tags:
+    - level1-domaincontroller
+    - level1-memberserver
+    - rule_9.2.7
+    - firewall
+    - domain
+    - standalone
+
+
+- name: Execute the section 9.3.1 tasks
+  ansible.builtin.import_tasks:
+      file: section09/section9.3.1.yaml
+  when:
+      - win22cis_section09
+  tags:
+    - level1-domaincontroller
+    - level1-memberserver
+    - rule_9.3.1
+    - firewall
+    - domain
+    - standalone
+
+- name: Execute the section 9.3.2 tasks
+  ansible.builtin.import_tasks:
+      file: section09/section9.3.2.yaml
+  when:
+      - win22cis_section09
+  tags:
+    - level1-domaincontroller
+    - level1-memberserver
+    - rule_9.3.2
+    - firewall
+    - domain
+    - standalone
+
+- name: Execute the section 9.3.3 tasks
+  ansible.builtin.import_tasks:
+      file: section09/section9.3.3.yaml
+  when:
+      - win22cis_section09
+  tags:
+    - level1-domaincontroller
+    - level1-memberserver
+    - rule_9.3.3
+    - firewall
+    - domain
+    - standalone
+
+- name: Execute the section 9.3.4 tasks
+  ansible.builtin.import_tasks:
+      file: section09/section9.3.4.yaml
+  when:
+      - win22cis_section09
+  tags:
+    - level1-domaincontroller
+    - level1-memberserver
+    - rule_9.3.4
+    - firewall
+    - domain
+    - standalone
+
+- name: Execute the section 9.3.5 tasks
+  ansible.builtin.import_tasks:
+      file: section09/section9.3.5.yaml
+  when:
+      - win22cis_section09
+  tags:
+    - level1-domaincontroller
+    - level1-memberserver
+    - rule_9.3.5
+    - firewall
+    - domain
+    - standalone
+
+- name: Execute the section 9.3.6 tasks
+  ansible.builtin.import_tasks:
+      file: section09/section9.3.6.yaml
+  when:
+      - win22cis_section09
+  tags:
+    - level1-domaincontroller
+    - level1-memberserver
+    - rule_9.3.6
+    - firewall
+    - domain
+    - standalone
+
+- name: Execute the section 9.3.7 tasks
+  ansible.builtin.import_tasks:
+      file: section09/section9.3.7.yaml
+  when:
+      - win22cis_section09
+  tags:
+    - level1-domaincontroller
+    - level1-memberserver
+    - rule_9.3.7
+    - firewall
+    - domain
+    - standalone
+
+
+- name: Execute the section 9.3.8 tasks
+  ansible.builtin.import_tasks:
+      file: section09/section9.3.8.yaml
+  when:
+      - win22cis_section09
+  tags:
+    - level1-domaincontroller
+    - level1-memberserver
+    - rule_9.3.8
+    - firewall
+    - domain
+    - standalone
+
+- name: Execute the section 9.3.9 tasks
+  ansible.builtin.import_tasks:
+      file: section09/section9.3.9.yaml
+  when:
+      - win22cis_section09
+  tags:
+    - level1-domaincontroller
+    - level1-memberserver
+    - rule_9.3.9
+    - firewall
+    - domain
+    - standalone
+

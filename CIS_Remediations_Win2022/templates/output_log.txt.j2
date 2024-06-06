@@ -1,0 +1,7 @@
+{% if contents %}
+{% for line in contents %}
+{{ line }}
+{% endfor %}
+{% else %}
+Playbook end with error. 
+{% endif %}

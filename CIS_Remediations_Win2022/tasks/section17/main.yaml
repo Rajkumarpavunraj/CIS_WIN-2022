@@ -1,0 +1,33 @@
+---
+
+
+- name: Ensure C:\Windows\Temp\CIS_REMEDIATION directory exists
+  win_file:
+    path: C:\Windows\Temp\CIS_REMEDIATION
+    state: directory
+  tags:
+    - always
+
+- name: Execute the section 17.1.1 tasks
+  ansible.builtin.import_tasks:
+      file: section09/section17.1.1.yaml
+  when:
+      - win22cis_section17
+  tags:
+    - standalone
+
+- name: Execute the section 17.2.1 tasks
+  ansible.builtin.import_tasks:
+      file: section09/section17.2.1.yaml
+  when:
+      - win22cis_section17
+  tags:
+    - standalone
+
+- name: Execute the section 17.3.1 tasks
+  ansible.builtin.import_tasks:
+      file: section09/section17.3.1.yaml
+  when:
+      - win22cis_section17
+  tags:
+    - standalone

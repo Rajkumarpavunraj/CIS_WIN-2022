@@ -1,0 +1,98 @@
+- name: "2.2.13 | Audit | Ensure Change the time zone is set to Administrators, LOCAL SERVICE - Before Remediation"
+  become: false
+  ansible.windows.win_shell: |
+      . C:\Windows\Temp\CIS_REMEDIATION\UserRightAssignment.ps1
+      (Get-AccountsWithUserRight -Right SeTimeZonePrivilege). Account
+  register: user_rights_before
+  vars:
+    ansible_shell_type: powershell
+  tags:
+    - patch
+    - audit
+
+- name: Debug users rights before
+  debug: 
+    var: user_rights_before
+
+- name: Add action log to the list - No remediation required
+  set_fact:
+    log_content: "{{ log_content + [
+      task_name, 
+      'No remediation required, Time zone already set to Administrators, LOCAL SERVICE'
+      ] }}"
+  vars:
+    task_name: "2.2.13 | PATCH | Ensure Change the time zone is set to Administrators, LOCAL SERVICE"
+  when: 
+    - ('Administrators' in user_rights_before.stdout and 'LOCAL SERVICE' in user_rights_before.stdout)
+  tags:
+    - patch
+    - audit
+
+- name: Add action log to the list - Remediation required
+  set_fact:
+    log_content: "{{ log_content + [
+      task_name, 
+      'Remediation required, Time zone NOT set to Administrators, LOCAL SERVICE'
+      ] }}"
+  vars:
+    task_name: "2.2.13 | PATCH | Ensure Change the time zone is set to Administrators, LOCAL SERVICE"
+  when: 
+    - ('Administrators' not in user_rights_before.stdout or 'LOCAL SERVICE' not in user_rights_before.stdout)
+  tags:
+    - patch
+    - audit 
+
+- name: "2.2.13 | PATCH | Ensure Change the time zone is set to Administrators, LOCAL SERVICE"
+  block:
+
+    - name: "2.2.13 | PATCH | Ensure Change the time zone is set to Administrators, LOCAL SERVICE - Update User Right"
+      ansible.windows.win_user_right:
+          name: SeTimeZonePrivilege
+          users:
+              - Administrators
+              - LOCAL SERVICE
+          action: set
+
+    - name: Add action log to the list - Update User Right 
+      set_fact:
+        log_content: "{{ log_content + [
+          task_name, 
+          'Updated User Right - SeTimeZonePrivilege'
+          ] }}"
+      vars:
+        task_name: "2.2.13 | PATCH | Ensure Change the time zone is set to Administrators, LOCAL SERVICE - Update User Right"
+
+  when:
+      - win22cis_rule_2_2_13
+      - ('Administrators' not in user_rights_before.stdout or 'LOCAL SERVICE' not in user_rights_before.stdout)
+  tags:
+      - patch
+
+- name: "2.2.13 | Audit | Ensure Change the time zone is set to Administrators, LOCAL SERVICE - After Remediation"
+  become: false
+  ansible.windows.win_shell: |
+      . C:\Windows\Temp\CIS_REMEDIATION\UserRightAssignment.ps1
+      (Get-AccountsWithUserRight -Right SeTimeZonePrivilege). Account
+  register: user_rights_after
+  vars:
+    ansible_shell_type: powershell
+  tags:
+    - patch
+    - audit 
+
+- name: Add check result to the list
+  set_fact:
+    report_content: "{{ report_content + [new_report_content] }}"
+  vars:
+    new_report_content:
+      # output_check_hostname: "{{ inventory_hostname }}"
+      # output_check_osname: "{{ ansible_os_name }}"
+      # output_check_hosttype: "{{ ansible_windows_domain_role }}"
+      output_check_id: "2.2.13"
+      output_check_name: "Ensure Change the time zone is set to Administrators, LOCAL SERVICE"
+      output_check_status_before: "{{ 'PASS' if ('Administrators' in user_rights_before.stdout and 'LOCAL SERVICE' in user_rights_before.stdout) else 'FAIL' }}"
+      output_check_status_after: "{{ 'PASS' if ('Administrators' in user_rights_after.stdout and 'LOCAL SERVICE' in user_rights_after.stdout) else 'FAIL' }}"
+      output_check_comments: "{{ 'Need To Fix From Domain Controller' if win2022cis_is_domain_member else 'Fix for Member Server' if fix_member_server else '' }}"
+  tags:
+    - patch
+    - audit

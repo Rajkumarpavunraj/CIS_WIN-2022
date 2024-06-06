@@ -1,0 +1,160 @@
+---
+- name: Ensure C:\Windows\Temp\CIS_REMEDIATION directory exists
+  win_file:
+    path: C:\Windows\Temp\CIS_REMEDIATION
+    state: directory
+  tags:
+    - always
+
+- name: Copy powershell script to directory
+  ansible.windows.win_copy:
+    src: UserRightAssignment.ps1
+    dest: C:\Windows\Temp\CIS_REMEDIATION
+  vars:
+    ansible_shell_type: powershell
+  tags:
+    - always
+
+# tasks file for CIS_Remediations_Win2022
+- name: Execute the section 2.2.1 tasks
+  ansible.builtin.import_tasks:
+      file: section02/section2.2.1.yaml
+  when:
+      - win22cis_section02
+  tags:
+      - level1-domaincontroller
+      - level1-memberserver
+      - rule_2.2.1
+      - firewall
+      - domain
+      - standalone
+
+- name: Execute the section 2.2.2 tasks
+  ansible.builtin.import_tasks:
+    file: section02/section2.2.2.yaml
+  when:
+      - win22cis_section02
+  tags:
+      - level1-domaincontroller
+      - level1-memberserver
+      - rule_2.2.2
+      - firewall
+      - domain
+      - standalone
+
+- name: Execute the section 2.2.3 tasks   
+  ansible.builtin.import_tasks:
+      file: section02/section2.2.3.yaml
+  when:
+      - win22cis_section02
+  tags:
+      - level1-domaincontroller
+      - level1-memberserver
+      - rule_2.2.3
+      - firewall
+      - domain
+      - standalone
+
+- name: Execute the section 2.2.4 tasks
+  ansible.builtin.import_tasks:
+      file: section02/section2.2.4.yaml
+  when:
+      - win22cis_section02
+  tags:
+      - level1-domaincontroller
+      - level1-memberserver
+      - rule_2.2.4
+      - firewall
+      - domain
+      - standalone
+
+- name: Execute the section 2.2.5 tasks
+  ansible.builtin.import_tasks:
+      file: section02/section2.2.5.yaml
+  when:
+      - win22cis_section02
+  tags:
+      - level1-domaincontroller
+      - level1-memberserver
+      - rule_2.2.5
+      - firewall
+      - domain
+      - standalone
+
+- name: Execute the section 2.2.9 tasks
+  ansible.builtin.import_tasks:
+      file: section02/section2.2.9.yaml
+  when:
+      - win22cis_section02
+  tags:
+      - level1-domaincontroller
+      - level1-memberserver
+      - rule_2.2.9
+      - firewall
+      - domain
+      - standalone
+
+- name: Execute the section 2.2.10 tasks
+  ansible.builtin.import_tasks:
+      file: section02/section2.2.10.yaml
+  when:
+      - win22cis_section02
+  tags:
+      - level1-domaincontroller
+      - level1-memberserver
+      - rule_2.2.10
+      - firewall
+      - domain
+      - standalone
+
+- name: Execute the section 2.2.11 tasks
+  ansible.builtin.import_tasks:
+      file: section02/section2.2.11.yaml
+  when:
+      - win22cis_section02
+  tags:
+      - level1-domaincontroller
+      - level1-memberserver
+      - rule_2.2.11
+      - firewall
+      - domain
+      - standalone
+
+- name: Execute the section 2.2.12 tasks
+  ansible.builtin.import_tasks:
+      file: section02/section2.2.12.yaml
+  when:
+      - win22cis_section02
+  tags:
+      - level1-domaincontroller
+      - level1-memberserver
+      - rule_2.2.12
+      - firewall
+      - domain
+      - standalone
+
+- name: Execute the section 2.2.13 tasks
+  ansible.builtin.import_tasks:
+      file: section02/section2.2.13.yaml
+  when:
+      - win22cis_section02
+  tags:
+      - level1-domaincontroller
+      - level1-memberserver
+      - rule_2.2.13
+      - firewall
+      - domain
+      - standalone
+
+# - name: Execute the section 2.x.n tasks
+#   ansible.builtin.import_tasks:
+#       file: section02/section2.x..yaml
+#   when:
+#       - win22cis_section02
+#   tags:
+#       - level1-domaincontroller
+#       - level1-memberserver
+#       - rule_2.x.n
+#       - firewall
+#       - domain
+#       - standalone

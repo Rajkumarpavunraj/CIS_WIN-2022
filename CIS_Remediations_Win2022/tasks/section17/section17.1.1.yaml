@@ -1,0 +1,14 @@
+
+- name: Add check result to the list
+  set_fact:
+    report_content: "{{ report_content + [new_report_content] }}"
+  vars:
+    new_report_content:
+      output_check_id: "17.1.1"
+      output_check_name: "Ensure 'Audit Credential Validation' is set to 'Success and Failure'"
+      output_check_status_before: "{{ 'PASS' if reg_cred.value|default(0)==1 else 'FAIL' }}"
+      output_check_status_after: "{{ 'PASS' if reg_cred.value|default(0) == 1 else 'FAIL' }}"
+      output_check_comments: "{{ 'Need To Fix' }}"
+  tags:
+    - patch
+    - audit

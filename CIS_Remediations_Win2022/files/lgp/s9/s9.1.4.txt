@@ -1,0 +1,4 @@
+Computer
+SOFTWARE\Policies\Microsoft\WindowsFirewall\DomainProfile\Logging
+LogFilePath
+SZ:%SystemRoot%\\System32\\logfiles\\firewall\\domainfw.log

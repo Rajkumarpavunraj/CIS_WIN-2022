@@ -1,0 +1,87 @@
+---
+# tasks file for CIS_Remediations_Win2022
+# - name: Execute the section 1.1.2 tasks
+#   ansible.builtin.import_tasks:
+#       file: section01/section1.1.2.yaml
+#   when:
+#       - win22cis_section01
+#   tags:
+#       - section01
+- name: Ensure C:\Windows\Temp\CIS_REMEDIATION directory exists
+  win_file:
+    path: C:\Windows\Temp\CIS_REMEDIATION
+    state: directory
+  tags:
+    - section01
+
+- name: Set Windows System Access Settings file name - before
+  set_fact:
+    win_access_settings_file_before: "C:\\Windows\\Temp\\CIS_REMEDIATION\\winsec-before.txt"
+
+- name: Set Windows System Access Settings file name - after
+  set_fact:
+    win_access_settings_file_after: "C:\\Windows\\Temp\\CIS_REMEDIATION\\winsec-after.txt"
+
+- name: Execute the section 1.1.1 tasks
+  ansible.builtin.import_tasks:
+      file: section01/section1.1.1.yaml
+  when:
+      - win22cis_section01
+  tags:
+      - section01
+
+- name: Execute the section 1.1.2 tasks
+  ansible.builtin.import_tasks:
+      file: section01/section1.1.2.yaml
+  when:
+      - win22cis_section01
+  tags:
+      - section01
+
+- name: Execute the section 1.1.3 tasks
+  ansible.builtin.import_tasks:
+      file: section01/section1.1.3.yaml
+  when:
+      - win22cis_section01
+  tags:
+      - section01
+
+- name: Execute the section 1.1.4 tasks
+  ansible.builtin.import_tasks:
+      file: section01/section1.1.4.yaml
+  when:
+      - win22cis_section01
+  tags:
+      - section01
+
+- name: Execute the section 1.1.5 tasks
+  ansible.builtin.import_tasks:
+      file: section01/section1.1.5.yaml
+  when:
+      - win22cis_section01
+  tags:
+      - section01
+
+- name: Execute the section 1.1.6 tasks
+  ansible.builtin.import_tasks:
+      file: section01/section1.1.6.yaml
+  when:
+      - win22cis_section01
+  tags:
+      - section01
+
+- name: Execute the section 1.1.7 tasks
+  ansible.builtin.import_tasks:
+      file: section01/section1.1.7.yaml
+  when:
+      - win22cis_section01
+  tags:
+      - section01
+
+# - name: Execute the section 1.1.n tasks
+#   ansible.builtin.import_tasks:
+#       file: section01/section1.1..yaml
+#   when:
+#       - win22cis_section01
+#   tags:
+#       - section01

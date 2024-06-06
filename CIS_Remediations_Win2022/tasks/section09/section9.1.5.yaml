@@ -1,0 +1,128 @@
+- name: "9.1.5 | Audit | Ensure 'Windows Firewall: Domain: Logging: Size limit (KB)' is set to '16,384 KB or greater' - Before Remediation"
+  win_reg_stat:
+    path: HKLM:\Software\Policies\Microsoft\WindowsFirewall\DomainProfile\Logging
+    name: LogFileSize
+  register: reg_value_915
+  tags:
+    - patch
+    - audit
+
+- name: Add action log to the list
+  set_fact:
+    log_content: "{{ log_content + [
+      task_name, 
+      'No remediation required'
+      ] }}"
+  vars:
+    task_name: "9.1.5 | PATCH | Ensure 'Windows Firewall: Domain: Logging: Size limit (KB)' is set to '16,384 KB or greater'"
+  when: reg_value_915.value|default(0) >= win22cis_domain_firewall_log_size and not fix_member_server
+  tags:
+    - patch
+    - audit
+
+- name: Add action log to the list
+  set_fact:
+    log_content: "{{ log_content + [
+      task_name, 
+      'Run with tag audit'
+      ] }}"
+  vars:
+    task_name: "9.1.5 | PATCH | Ensure 'Windows Firewall: Domain: Logging: Size limit (KB)' is set to '16,384 KB or greater'"
+  when:
+    - "'audit' in ansible_run_tags"  
+  tags:
+    - audit
+
+- name: "9.1.5 | PATCH | Ensure 'Windows Firewall: Domain: Logging: Size limit (KB)' is set to '16,384 KB or greater'"
+  block:
+
+    - name: "9.1.5 | PATCH | Ensure 'Windows Firewall: Domain: Logging: Size limit (KB)' is set to '16,384 KB or greater' - Update Registry"
+      ansible.windows.win_regedit:
+        path: HKLM:\Software\Policies\Microsoft\WindowsFirewall\DomainProfile\Logging
+        name: LogFileSize
+        data: "{{ win22cis_domain_firewall_log_size }}"
+        type: dword
+      register: task_9_1_5_1
+
+    - name: Add action log to the list
+      set_fact:
+        log_content: "{{ log_content + [
+          task_name, 
+          'Updated Registry HKLM:\\Software\\Policies\\Microsoft\\Windowsfirewall\\DomainProfile\\Logging LogFileSize='~win22cis_domain_firewall_log_size,
+          task_9_1_5_1
+          ] }}"
+      vars:
+        task_name: "9.1.5 | PATCH | Ensure 'Windows Firewall: Domain: Logging: Size limit (KB)' is set to '16,384 KB or greater' - Update Registry"
+
+    - name: "9.1.5 | PATCH | Ensure 'Windows Firewall: Domain: Logging: Size limit (KB)' is set to '16,384 KB or greater' - Update GPO"
+      win_shell: |
+        Import-Module GroupPolicy
+        $GPO = Get-GPO -Name "{{ cis_gpo }}"
+        if ($GPO -eq $null) {
+            Write-Output "GPO {{ cis_gpo }} not exist, creating it"
+            New-GPO -Name "{{ cis_gpo }}"
+        } else {
+            Write-Output "GPO {{ cis_gpo }} exist"
+        }
+        $domainGPOName = (Get-GPO -Name "{{ cis_gpo }}").DisplayName
+        Set-GPRegistryValue -Name $domainGPOName -Key "HKLM\Software\Policies\Microsoft\WindowsFirewall\DomainProfile\Logging" -ValueName "LogFileSize" -Type DWORD -Value {{ win22cis_domain_firewall_log_size }}
+      register: task_9_1_5_2 
+      when: win2022cis_is_domain_controller
+
+    - name: Add action log to the list
+      set_fact:
+        log_content: "{{ log_content + [
+          task_name, 
+          'Domain: Logging: Size limit (KB) is set to 16384 KB in GPO ' ~ cis_gpo,
+          task_9_1_5_2
+          ] }}"
+      vars:
+        task_name: "9.1.5 | PATCH | Ensure 'Windows Firewall: Domain: Logging: Size limit (KB)' is set to '16,384 KB or greater' - Update GPO"
+      when:
+        - win2022cis_is_domain_controller
+
+    - name: "9.1.5 | PATCH | Ensure 'Windows Firewall: Domain: Logging: Size limit (KB)' is set to '16,384 KB or greater' - Update Local Group Policy"
+      win_shell: |
+        C:\Windows\Temp\CIS_REMEDIATION\LGPO.exe /t C:\Windows\Temp\CIS_REMEDIATION\s9\s9.1.5.txt
+      register: task_9_1_5_3
+      when:
+        - win2022cis_is_standalone
+
+    - name: Add action log to the list
+      set_fact:
+        log_content: "{{ log_content + [
+          task_name, 
+          'Domain: Logging: Size limit (KB) is set to 16384 KB in Local Security Policy',
+          task_9_1_5_3
+          ] }}"
+      vars:
+        task_name: "9.1.5 | PATCH | Ensure 'Windows Firewall: Domain: Logging: Size limit (KB)' is set to '16,384 KB or greater' - Update Local Group Policy"
+      when:
+        - win2022cis_is_standalone
+
+  when: reg_value_915.value|default(0) < win22cis_domain_firewall_log_size or fix_member_server
+  tags:
+    - patch
+
+- name: "9.1.5 | Audit | Ensure 'Windows Firewall: Domain: Logging: Size limit (KB)' is set to '16,384 KB or greater' - After Remediation"
+  win_reg_stat:
+    path: HKLM:\Software\Policies\Microsoft\WindowsFirewall\DomainProfile\Logging
+    name: LogFileSize
+  register: reg_value_915_a
+  tags:
+    - patch
+    - audit
+
+- name: Add check result to the list
+  set_fact:
+    report_content: "{{ report_content + [new_report_content] }}"
+  vars:
+    new_report_content:
+      output_check_id: "9.1.5"
+      output_check_name: "Ensure 'Windows Firewall: Domain: Logging: Size limit (KB)' is set to '16,384 KB or greater'"
+      output_check_status_before: "{{ 'PASS' if reg_value_915.value|default(0) >= win22cis_domain_firewall_log_size else 'FAIL' }}"
+      output_check_status_after: "{{ 'PASS' if reg_value_915_a.value|default(0) >=win22cis_domain_firewall_log_size and not win2022cis_is_domain_member or reg_value_915_a.value|default(0) >= win22cis_domain_firewall_log_size and reg_value_915.value|default(0) >= win22cis_domain_firewall_log_size  else 'WARNING' if reg_value_915_a.value|default(0) >= win22cis_domain_firewall_log_size and reg_value_915.value|default(0) < win22cis_domain_firewall_log_size and win2022cis_is_domain_member else 'FAIL' }}"
+      output_check_comments: "{{ 'Need To Fix From Domain Controller' if win2022cis_is_domain_member and reg_value_915.value|default(0) < win22cis_domain_firewall_log_size else 'Fix for Member Server' if fix_member_server else '' }}"
+  tags:
+    - patch
+    - audit

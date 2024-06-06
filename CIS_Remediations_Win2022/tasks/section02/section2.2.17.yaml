@@ -1,0 +1,64 @@
+- name: "2.2.1 | Audit | Ensure Access Credential Manager as a trusted caller is set to No One - Before Remediation"
+  become: false
+  ansible.windows.win_shell: |
+      . C:\Windows\Temp\CIS_REMEDIATION\UserRightAssignment.ps1
+      (Get-AccountsWithUserRight -Right SeTrustedCredManAccessPrivilege). Account
+  register: user_rights_before
+  vars:
+    ansible_shell_type: powershell
+
+- name: Debug users rights before
+  debug: 
+    var: user_rights_before
+
+- name: Add action log to the list
+  set_fact:
+    log_content: "{{ log_content + [
+      task_name, 
+      'No remediation required'
+      ] }}"
+  vars:
+    task_name: "2.2.1 | PATCH | Ensure Access Credential Manager as a trusted caller is set to No One"
+  when: user_rights_before == "" 
+
+# Reference: https://docs.ansible.com/ansible/latest/collections/ansible/windows/win_user_right_module.html
+- name: "2.2.1 | PATCH | Ensure Access Credential Manager as a trusted caller is set to No One"
+  ansible.windows.win_user_right:
+      name: SeTrustedCredManAccessPrivilege
+      users: []
+      action: set
+      #users: #Can be set to an empty list with action=set to remove all accounts from the right.
+  tags:
+      - level1-domaincontroller
+      - level1-memberserver
+      - rule_2.2.1
+      - patch
+      - userrights
+  when: 
+      - win22cis_rule_2_2_1
+      - user_rights_before.stdout != ""
+
+- name: "2.2.1 | Audit | Ensure Access Credential Manager as a trusted caller is set to No One - After Remediation"
+  become: false
+  ansible.windows.win_shell: |
+      . C:\Windows\Temp\CIS_REMEDIATION\UserRightAssignment.ps1
+      (Get-AccountsWithUserRight -Right SeTrustedCredManAccessPrivilege). Account
+  register: user_rights_after
+  vars:
+    ansible_shell_type: powershell 
+
+- name: Add check result to the list
+  set_fact:
+    report_content: "{{ report_content + [new_report_content] }}"
+  vars:
+    new_report_content:
+      # output_check_hostname: "{{ inventory_hostname }}"
+      # output_check_osname: "{{ ansible_os_name }}"
+      # output_check_hosttype: "{{ ansible_windows_domain_role }}"
+      output_check_id: "2.2.1"
+      output_check_name: "Ensure Access Credential Manager as a trusted caller is set to No One"
+      output_check_status_before: "{{ 'PASS' if user_rights_before.stdout == '' else 'FAIL' }}"
+      output_check_status_after: "{{ 'PASS' if user_rights_after.stdout == '' else 'FAIL' }}"
+      output_check_comments: "{{ 'Need To Fix From Domain Controller' if win2022cis_is_domain_member else 'Fix for Member Server' if fix_member_server else '' }}"
+
+#NOTE: Pending to add loggin and reporting according to latest changes

@@ -1,0 +1,4 @@
+Computer
+SOFTWARE\Policies\Microsoft\WindowsFirewall\PublicProfile\Logging
+LogFileSize
+DWORD:16384

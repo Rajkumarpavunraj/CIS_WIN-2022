@@ -1,0 +1,37 @@
+- name: audit "19.7.8.5"
+  ansible.windows.win_reg_stat:
+      path: HKU:\{{ item }}\Software\Policies\Microsoft\Windows\CloudContent
+      name: DisableSpotlightCollectionOnDesktop
+  loop: "{{ hku_loaded_list }}"
+  register: audit_19_7_8_5
+  
+
+# Reference: https://docs.ansible.com/ansible/latest/collections/ansible/windows/win_user_right_module.html
+- name: "19.7.8.5 | PATCH |  Ensure 'Turn off Spotlight collection on Desktop' is set to 'Enabled'"
+  ansible.windows.win_regedit:
+      path: HKU:\{{ item }}\Software\Policies\Microsoft\Windows\CloudContent
+      name: DisableSpotlightCollectionOnDesktop
+      data: 1
+      type: dword
+  loop: "{{ hku_loaded_list }}"
+  #notify: change_requires_reboot
+  when:
+      - win22cis_rule_19_7_8_5
+  tags:
+      - level1-domaincontroller
+      - level1-memberserver
+      - rule_19.7.8.5
+      - patch
+      - userrights
+
+- name: audit "19.7.8.5" again
+  ansible.windows.win_reg_stat:
+      path: HKU:\{{ item }}\Software\Policies\Microsoft\Windows\CloudContent
+      name: DisableSpotlightCollectionOnDesktop
+  loop: "{{ hku_loaded_list }}"
+  register: audit_19_7_8_5_again
+
+- name: write report
+  # write to report if need a report.
+  vars:
+    ansible_shell_type: sh

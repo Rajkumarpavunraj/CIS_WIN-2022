@@ -1,0 +1,8 @@
+Host Name,OS Name,Server Role,Section ID,Section Name,Before Status,After Status,Comments
+{% if contents %}
+{% for line in contents %}
+"{{ inventory_hostname|default('Unknown') }}","{{ ansible_os_name|default(Unknown) }}","{{ ansible_windows_domain_role|default(Unknown) }}","{{ line.output_check_id }}","{{ line.output_check_name }}","{{ line.output_check_status_before }}","{{ line.output_check_status_after }}","{{ line.output_check_comments }}"
+{% endfor %}
+{% else %}
+Playbook end with error. 
+{% endif %}

@@ -1,0 +1,22 @@
+- name: audit "1.1.7"
+# run the check...1.1.7
+
+- name: "1.1.7 | PATCH | Ensure Store passwords using reversible encryption is set to Disabled"
+  community.windows.win_security_policy:
+      section: System Access
+      key: ClearTextPassword
+      value: 0
+  when:
+      - win22cis_rule_1_1_7
+  tags:
+      - level1-domaincontroller
+      - level1-memberserver
+      - rule_1.1.7
+      - patch
+      - password
+
+- name: audit "1.1.7" again
+# run the check...1.1.7 again
+
+- name: write report
+  # write to report if need a report. 

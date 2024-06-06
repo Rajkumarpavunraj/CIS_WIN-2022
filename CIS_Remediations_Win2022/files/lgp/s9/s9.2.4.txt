@@ -1,0 +1,4 @@
+Computer
+SOFTWARE\Policies\Microsoft\WindowsFirewall\PrivateProfile\Logging
+LogFilePath
+SZ:%SystemRoot%\\System32\\logfiles\\firewall\\privatefw.log
