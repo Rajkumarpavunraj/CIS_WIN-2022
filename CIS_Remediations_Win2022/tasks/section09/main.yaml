@@ -2,14 +2,14 @@
 
 
 - name: Ensure C:\Windows\Temp\CIS_REMEDIATION directory exists
-  ansible.windows.win_file:
+  win_file:
     path: C:\Windows\Temp\CIS_REMEDIATION
     state: directory
   tags:
     - always
 
 - name: Copy LGPO.zip to remote Windows machine
-  ansible.windows.win_copy:
+  win_copy:
     src: LGPO.zip
     dest: C:\Windows\Temp\CIS_REMEDIATION\LGPO.zip
   when: 
@@ -18,7 +18,7 @@
     - always
 
 - name: Unzip LGPO.zip
-  community.windows.win_unzip:
+  win_unzip:
     src: C:\Windows\Temp\CIS_REMEDIATION\LGPO.zip
     dest: C:\Windows\Temp\CIS_REMEDIATION\
     overwrite: yes
@@ -49,7 +49,7 @@
     - always
 
 - name: Transfer s9 archive to remote machine
-  ansible.windows.win_copy:
+  win_copy:
     src: lgp-s9.zip
     dest: C:\Windows\Temp\CIS_REMEDIATION\
   when: 
@@ -58,7 +58,7 @@
     - always
 
 - name: Unarchive s9 on remote machine
-  community.windows.win_unzip:
+  win_unzip:
     src: C:\Windows\Temp\CIS_REMEDIATION\lgp-s9.zip
     dest: C:\Windows\Temp\CIS_REMEDIATION\
     overwrite: yes

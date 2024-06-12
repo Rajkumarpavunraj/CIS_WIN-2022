@@ -8,6 +8,65 @@
   tags:
     - always
 
+- name: Copy LGPO.zip to remote Windows machine
+  win_copy:
+    src: LGPO.zip
+    dest: C:\Windows\Temp\CIS_REMEDIATION\LGPO.zip
+  when: 
+    - win2022cis_is_standalone
+  tags:
+    - always
+
+- name: Unzip LGPO.zip
+  win_unzip:
+    src: C:\Windows\Temp\CIS_REMEDIATION\LGPO.zip
+    dest: C:\Windows\Temp\CIS_REMEDIATION\
+    overwrite: yes
+  when: 
+    - win2022cis_is_standalone
+  tags:
+    - always
+
+- block:
+    - name: Set shell type and executable for localhost tasks
+      set_fact:
+        local_ansible_shell_type: sh
+        local_ansible_shell_executable: /bin/sh
+
+    - name: Archive local s18 folder
+      ansible.builtin.archive:
+        path: "{{ role_path }}/files/lgp/s18"
+        dest: "{{ role_path }}/files/lgp-s18.zip"
+        format: zip  
+      delegate_to: localhost
+      become: no
+      vars:
+        ansible_shell_type: "{{ local_ansible_shell_type }}"
+        ansible_shell_executable: "{{ local_ansible_shell_executable }}"
+      when: 
+        - win2022cis_is_standalone
+  tags:
+    - always
+
+- name: Transfer s18 archive to remote machine
+  win_copy:
+    src: lgp-s18.zip
+    dest: C:\Windows\Temp\CIS_REMEDIATION\
+  when: 
+    - win2022cis_is_standalone
+  tags:
+    - always
+
+- name: Unarchive s18 on remote machine
+  win_unzip:
+    src: C:\Windows\Temp\CIS_REMEDIATION\lgp-s18.zip
+    dest: C:\Windows\Temp\CIS_REMEDIATION\
+    overwrite: yes
+  when: 
+    - win2022cis_is_standalone
+  tags:
+    - always
+
 - name: Execute the section 18.10.80.1 tasks
   ansible.builtin.import_tasks:
       file: section18/section18.10.80.1.yaml
