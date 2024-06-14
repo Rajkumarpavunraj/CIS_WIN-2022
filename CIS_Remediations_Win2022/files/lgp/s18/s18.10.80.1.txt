@@ -1,4 +1,4 @@
 Computer
-Software\Policies\Microsoft\WindowsInkWorkspace
-AllowSuggestedAppsInWindowsInkWorkspace
+Software\Policies\Microsoft\Windows\Installer
+EnableUserControl
 DWORD:0

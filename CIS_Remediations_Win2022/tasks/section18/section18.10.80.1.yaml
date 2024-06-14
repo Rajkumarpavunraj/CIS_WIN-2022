@@ -1,7 +1,7 @@
-- name: Get current value of AllowSuggestedAppsInWindowsInkWorkspace
+- name: Get current value of 'Allow user control over installs'
   win_reg_stat:
-    path: HKLM:\Software\Policies\Microsoft\WindowsInkWorkspace
-    name: AllowSuggestedAppsInWindowsInkWorkspace
+    path: HKLM:\Software\Policies\Microsoft\Windows\Installer
+    name: EnableUserControl
   register: reg_result1810801
   when:
     - win22cis_rule_18_10_80_1
@@ -21,7 +21,7 @@
   set_fact:
     log_content: "{{ log_content + [task_name, 'No remediation required'] }}"
   vars:
-    task_name: "18.10.80.1 | PATCH | Ensure Allow suggested apps in Windows Ink Workspace is set to Disabled"
+    task_name: "18.10.80.1 | PATCH | Ensure 'Allow user control over installs' is set to 'Disabled'"
   when: reg_result1810801.exists and reg_result1810801.value|default(0) == 0 and not fix_member_server
   tags:
     - patch
@@ -31,22 +31,22 @@
   set_fact:
     log_content: "{{ log_content + [task_name, 'Run with tag audit'] }}"
   vars:
-    task_name: "18.10.80.1 | PATCH | Ensure Allow suggested apps in Windows Ink Workspace is set to Disabled"
+    task_name: "18.10.80.1 | PATCH | Ensure 'Allow user control over installs' is set to 'Disabled'"
   when: "'audit' in ansible_run_tags"
   tags:
     - audit
 
-- name: "18.10.80.1 | PATCH | Ensure Allow suggested apps in Windows Ink Workspace is set to Disabled"
+- name: "18.10.80.1 | PATCH | Ensure 'Allow user control over installs' is set to 'Disabled'"
   block:
     - name: Ensure registry path exists
       win_regedit:
-        path: HKLM:\Software\Policies\Microsoft\WindowsInkWorkspace
+        path: HKLM:\Software\Policies\Microsoft\Windows\Installer
         state: present
 
-    - name: "18.10.80.1 | PATCH | Ensure Allow suggested apps in Windows Ink Workspace is set to Disabled - Update Registry"
+    - name: "18.10.80.1 | PATCH | Ensure 'Allow user control over installs' is set to 'Disabled' - Update Registry"
       win_regedit:
-        path: HKLM:\Software\Policies\Microsoft\WindowsInkWorkspace
-        name: AllowSuggestedAppsInWindowsInkWorkspace
+        path: HKLM:\Software\Policies\Microsoft\Windows\Installer
+        name: EnableUserControl
         data: 0
         type: dword
       register: task_18_10_80_1_1
@@ -59,13 +59,13 @@
       set_fact:
         log_content: "{{ log_content + [
           task_name, 
-          'Updated Registry HKLM:\\Software\\Policies\\Microsoft\\WindowsInkWorkspace=0',
+          'Updated Registry HKLM:\\Software\\Policies\\Microsoft\\Windows\\Installer\\EnableUserControl=0',
           task_18_10_80_1_1
           ] }}"
       vars:
-        task_name: "18.10.80.1 | PATCH | Ensure Allow suggested apps in Windows Ink Workspace is set to Disabled - Update Registry"
+        task_name: "18.10.80.1 | PATCH | Ensure 'Allow user control over installs' is set to 'Disabled' - Update Registry"
 
-    - name: "18.10.80.1 | PATCH | Ensure Allow suggested apps in Windows Ink Workspace is set to Disabled - Update GPO"
+    - name: "18.10.80.1 | PATCH | Ensure 'Allow user control over installs' is set to 'Disabled' - Update GPO"
       win_shell: |
         Import-Module GroupPolicy
         $GPO = Get-GPO -Name "{{ cis_gpo }}"
@@ -76,7 +76,7 @@
             Write-Output "GPO {{ cis_gpo }} exist"
         }
         $domainGPOName = (Get-GPO -Name "{{ cis_gpo }}").DisplayName
-        Set-GPRegistryValue -Name $domainGPOName -Key "HKLM\Software\Policies\Microsoft\WindowsInkWorkspace" -ValueName "AllowSuggestedAppsInWindowsInkWorkspace" -Type DWORD -Value 0
+        Set-GPRegistryValue -Name $domainGPOName -Key "HKLM:\Software\Policies\Microsoft\Windows\Installer" -ValueName "EnableUserControl" -Type DWORD -Value 0
       register: task_18_10_80_1_2
       when: win2022cis_is_domain_controller
 
@@ -89,14 +89,14 @@
       set_fact:
         log_content: "{{ log_content + [
           task_name, 
-          'Enabled Firewall DomainProfile in GPO ' ~ cis_gpo,
+          'Ensure 'Allow user control over installs' is set to 'Disabled' in GPO ' ~ cis_gpo,
           task_18_10_80_1_2
           ] }}"
       vars:
-        task_name: "18.10.80.1 | PATCH | Ensure Allow suggested apps in Windows Ink Workspace is set to Disabled - Update GPO"
+        task_name: "18.10.80.1 | PATCH | Ensure 'Allow user control over installs' is set to 'Disabled' - Update GPO"
       when: win2022cis_is_domain_controller
 
-    - name: "18.10.80.1 | PATCH | Ensure Allow suggested apps in Windows Ink Workspace is set to Disabled - Update Local Group Policy"
+    - name: "18.10.80.1 | PATCH | Ensure 'Allow user control over installs' is set to 'Disabled' - Update Local Group Policy"
       win_shell: |
         C:\Windows\Temp\CIS_REMEDIATION\LGPO.exe /t C:\Windows\Temp\CIS_REMEDIATION\s18\s18.10.80.1.txt
       register: task_18_10_80_1_3
@@ -111,20 +111,20 @@
       set_fact:
         log_content: "{{ log_content + [
           task_name, 
-          'Enabled Firewall DomainProfile in Local Security Policy',
+          'Ensure 'Allow user control over installs' is set to 'Disabled'',
           task_18_10_80_1_3
           ] }}"
       vars:
-        task_name: "18.10.80.1 | PATCH | Ensure Allow suggested apps in Windows Ink Workspace is set to Disabled - Update Local Group Policy"
+        task_name: "18.10.80.1 | PATCH | Ensure 'Allow user control over installs' is set to 'Disabled' - Update Local Group Policy"
       when: win2022cis_is_standalone
   when: not reg_result1810801.exists or reg_result1810801.value|default(0) != 0 or fix_member_server
   tags:
     - patch
 
-- name: "18.10.80.1 | PATCH | Ensure Allow suggested apps in Windows Ink Workspace is set to Disabled - After Remediation"
+- name: "18.10.80.1 | PATCH | Ensure 'Allow user control over installs' is set to 'Disabled' - After Remediation"
   win_reg_stat:
-    path: HKLM:\Software\Policies\Microsoft\WindowsInkWorkspace
-    name: AllowSuggestedAppsInWindowsInkWorkspace
+    path: HKLM:\Software\Policies\Microsoft\Windows\Installer
+    name: EnableUserControl
   register: reg_result1810801_a
   tags:
     - patch
@@ -140,7 +140,7 @@
   vars:
     new_report_content:
       output_check_id: "18.10.80.1"
-      output_check_name: "Ensure Allow suggested apps in Windows Ink Workspace is set to Disabled"
+      output_check_name: "Ensure 'Allow user control over installs' is set to 'Disabled'"
       output_check_status_before: "{{ 'PASS' if reg_result1810801.exists and reg_result1810801.value|default(0) == 0  else 'FAIL' }}"
       output_check_status_after: "{{ 'PASS' if reg_result1810801_a.exists and reg_result1810801_a.value|default(0) == 0 else 'WARNING' if reg_result1810801_a.value|default(0) == 1 and reg_result1810801.value|default(0) != 0 and win2022cis_is_domain_member else 'FAIL' }}"
       output_check_comments: "{{ '' }}"
