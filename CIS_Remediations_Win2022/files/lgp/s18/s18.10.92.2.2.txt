@@ -1,0 +1,4 @@
+Computer
+SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate\AU
+ScheduledInstallDay
+DWORD:0

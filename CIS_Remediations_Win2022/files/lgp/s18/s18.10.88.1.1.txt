@@ -1,0 +1,4 @@
+Computer
+SOFTWARE\Policies\Microsoft\Windows\WinRM\Client
+AllowBasic
+DWORD:0
