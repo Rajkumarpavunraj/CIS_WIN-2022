@@ -41,6 +41,8 @@
     - name: Ensure registry path exists
       win_regedit:
         path: HKLM:\Software\Policies\Microsoft\Windows\Installer
+        name: EnableUserControl
+        type: dword
         state: present
 
     - name: "18.10.80.1 | PATCH | Ensure 'Allow user control over installs' is set to 'Disabled' - Update Registry"
