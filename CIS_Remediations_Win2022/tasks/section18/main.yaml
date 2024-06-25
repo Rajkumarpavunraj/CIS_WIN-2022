@@ -91,7 +91,6 @@
 #   tags:
 #     - standalone
 
-
 # - name: Execute the section 18.10.88.1.1 tasks
 #   ansible.builtin.import_tasks:
 #       file: section18/section18.10.88.1.1.yaml
@@ -100,7 +99,7 @@
 #   tags:
 #     - standalone
 
-# - name: Execute the section 18.10.92.2.1 tasks
+# - name: Execute the section 18.10.91.2.1 tasks
 #   ansible.builtin.import_tasks:
 #       file: section18/section18.10.92.2.1.yaml
 #   when:
@@ -111,6 +110,38 @@
 # - name: Execute the section 18.10.92.2.2 tasks
 #   ansible.builtin.import_tasks:
 #       file: section18/section18.10.92.2.2.yaml
+#   when:
+#       - win22cis_section18
+#   tags:
+#     - standalone
+
+# - name: Execute the section 18.9.25.4 tasks
+#   ansible.builtin.import_tasks:
+#       file: section18/section18.9.25.4.yaml
+#   when:
+#       - win22cis_section18
+#   tags:
+#     - standalone
+
+# - name: Execute the section 18.9.25.5 tasks
+#   ansible.builtin.import_tasks:
+#       file: section18/section18.9.25.5.yaml
+#   when:
+#       - win22cis_section18
+#   tags:
+#     - standalone
+
+# - name: Execute the section 18.9.25.6 tasks
+#   ansible.builtin.import_tasks:
+#       file: section18/section18.9.25.6.yaml
+#   when:
+#       - win22cis_section18
+#   tags:
+#     - standalone
+
+# - name: Execute the section 2.3.7.1 tasks
+#   ansible.builtin.import_tasks:
+#       file: section18/section2.3.7.1.yaml
 #   when:
 #       - win22cis_section18
 #   tags:

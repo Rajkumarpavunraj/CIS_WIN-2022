@@ -1,0 +1,4 @@
+Computer
+SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System
+DisableCAD
+DWORD:0

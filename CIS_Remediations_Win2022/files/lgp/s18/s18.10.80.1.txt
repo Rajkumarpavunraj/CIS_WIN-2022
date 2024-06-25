@@ -1,4 +1,4 @@
 Computer
-Software\Policies\Microsoft\Windows\Installer
+SOFTWARE\Policies\Microsoft\Windows\Installer
 EnableUserControl
 DWORD:0

@@ -1,0 +1,4 @@
+Computer
+SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\LAPS
+PasswordComplexity
+DWORD:4

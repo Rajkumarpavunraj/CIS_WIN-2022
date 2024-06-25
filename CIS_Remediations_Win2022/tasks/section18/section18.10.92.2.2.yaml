@@ -1,6 +1,6 @@
-- name: Get current value of 'Allow user control over installs'
+- name: Get current value of Ensure 'Allow user control over installs' is set to 'Disabled'
   win_reg_stat:
-    path: HKLM:\Software\Policies\Microsoft\Windows\Installer
+    path: HKLM:\SOFTWARE\Policies\Microsoft\Windows\Installer
     name: EnableUserControl
   register: reg_result1810801
   when:
@@ -40,12 +40,12 @@
   block:
     - name: Ensure registry path exists
       win_regedit:
-        path: HKLM:\Software\Policies\Microsoft\Windows\Installer
+        path: HKLM:\SOFTWARE\Policies\Microsoft\Windows\Installer\EnableUserControl
         state: present
 
-    - name: "18.10.80.1 | PATCH | Ensure 'Allow user control over installs' is set to 'Disabled' - Update Registry"
+    - name: "18.10.80.1 | PATCH | Ensure 'Allow user control over installs' is set to 'Disabled'"
       win_regedit:
-        path: HKLM:\Software\Policies\Microsoft\Windows\Installer
+        path: HKLM:\SOFTWARE\Policies\Microsoft\Windows\Installer
         name: EnableUserControl
         data: 0
         type: dword
@@ -59,11 +59,11 @@
       set_fact:
         log_content: "{{ log_content + [
           task_name, 
-          'Updated Registry HKLM:\\Software\\Policies\\Microsoft\\Windows\\Installer\\EnableUserControl=0',
+          'Updated Registry HKLM:\\Software\\Policies\\Microsoft\\Installer\\EnableUserControl=0',
           task_18_10_80_1_1
           ] }}"
       vars:
-        task_name: "18.10.80.1 | PATCH | Ensure 'Allow user control over installs' is set to 'Disabled' - Update Registry"
+        task_name: "18.10.80.1 | PATCH | Ensure 'Allow user control over installs' is set to 'Disabled'"
 
     - name: "18.10.80.1 | PATCH | Ensure 'Allow user control over installs' is set to 'Disabled' - Update GPO"
       win_shell: |
@@ -76,7 +76,7 @@
             Write-Output "GPO {{ cis_gpo }} exist"
         }
         $domainGPOName = (Get-GPO -Name "{{ cis_gpo }}").DisplayName
-        Set-GPRegistryValue -Name $domainGPOName -Key "HKLM:\Software\Policies\Microsoft\Windows\Installer" -ValueName "EnableUserControl" -Type DWORD -Value 0
+        Set-GPRegistryValue -Name $domainGPOName -Key "HKLM\SOFTWARE\Policies\Microsoft\Windows\Installer" -ValueName "EnableUserControl" -Type DWORD -Value 0
       register: task_18_10_80_1_2
       when: win2022cis_is_domain_controller
 
@@ -89,7 +89,7 @@
       set_fact:
         log_content: "{{ log_content + [
           task_name, 
-          'Ensure 'Allow user control over installs' is set to 'Disabled' in GPO ' ~ cis_gpo,
+          'Enabled Firewall DomainProfile in GPO ' ~ cis_gpo,
           task_18_10_80_1_2
           ] }}"
       vars:
@@ -111,7 +111,7 @@
       set_fact:
         log_content: "{{ log_content + [
           task_name, 
-          'Ensure 'Allow user control over installs' is set to 'Disabled'',
+          'Enabled Firewall DomainProfile in Local Security Policy',
           task_18_10_80_1_3
           ] }}"
       vars:
@@ -123,7 +123,7 @@
 
 - name: "18.10.80.1 | PATCH | Ensure 'Allow user control over installs' is set to 'Disabled' - After Remediation"
   win_reg_stat:
-    path: HKLM:\Software\Policies\Microsoft\Windows\Installer
+    path: HKLM:\SOFTWARE\Policies\Microsoft\Windows\Installer
     name: EnableUserControl
   register: reg_result1810801_a
   tags:
